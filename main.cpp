@@ -2,6 +2,10 @@
 #include "imgui_impl_glfw.h"
 #include "imgui_impl_opengl3.h"
 #include <stdio.h>
+#include <string>
+
+#include "chebCosSum.cpp"
+
 #define GL_SILENCE_DEPRECATION
 #if defined(IMGUI_IMPL_OPENGL_ES2)
 #include <GLES2/gl2.h>
@@ -148,10 +152,25 @@ int WinMain(void*, void*, int, char**) {
 
 		// 2. Show a simple window that we create ourselves. We use a Begin/End pair to create a named window.
 		{
-			static int counter = 0;
+			static int size = 2;
 			static double f1 = 1.e0;
-			
-			ImGui::Begin("Hello, world!", 0, flags);				// Create a window called "Hello, world!" and append into it.
+			static double inputs[32] = {};
+			static double outputs[32] = {};
+
+			ImGui::Begin("Hello, world!", 0, flags);
+
+			if (ImGui::Button("+")) {
+				size++;
+				chebCosSum (size, inputs, outputs);
+			}
+			ImGui::SameLine();
+			if (ImGui::Button("-")) {
+				size = (size > 2) ? size - 1 : size;
+				chebCosSum (size, inputs, outputs);
+			}
+			ImGui::SameLine();
+			ImGui::Text("size = %d", size);
+
 
 			ImGuiTabBarFlags tab_bar_flags = ImGuiTabBarFlags_None;
 			if (ImGui::BeginTabBar("MyTabBar", tab_bar_flags)) {
@@ -161,9 +180,11 @@ int WinMain(void*, void*, int, char**) {
 				}
 				if (ImGui::BeginTabItem("Scientific")) {
 					ImGui::Text("This is the Broccoli tab!\nblah blah blah blah blah");
-					ImGui::InputDouble("1 input scientific", &f1, 0.0, 0.0, "%e");
-					ImGui::InputDouble("2 input scientific", &f1, 0.0, 0.0, "%e");
-					ImGui::InputDouble("3 input scientific", &f1, 0.0, 0.0, "%e");
+					for (int i = 0; i < size; i++) {
+						if(ImGui::InputDouble(std::to_string(i).c_str(), &inputs[i], 0.0, 0.0, "%e")) {
+							chebCosSum (size, inputs, outputs);
+						}
+					}
 					ImGui::EndTabItem();
 				}
 				if (ImGui::BeginTabItem("Hex")) {
@@ -173,14 +194,12 @@ int WinMain(void*, void*, int, char**) {
 				ImGui::EndTabBar();
 			}
 			ImGui::Separator();
+			for (int i = 0; i < size; i++) {
+				ImGui::InputDouble(std::to_string(i).c_str(), &outputs[i], 0.0, 0.0, "%f");
+			}
 			ImGui::Text("This is some useful text.");				// Display some text (you can use a format strings too)
 			ImGui::Checkbox("Demo Window", &show_demo_window);		// Edit bools storing our window open/close state
 			ImGui::Checkbox("Another Window", &show_another_window);
-
-			if (ImGui::Button("Button"))							// Buttons return true when clicked (most widgets return true when edited/activated)
-				counter++;
-			ImGui::SameLine();
-			ImGui::Text("counter = %d", counter);
 
 			ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / io.Framerate, io.Framerate);
 			ImGui::End();
