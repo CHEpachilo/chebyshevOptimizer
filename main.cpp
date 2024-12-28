@@ -5,6 +5,7 @@
 #include <string>
 
 #include "chebCosSum.cpp"
+#define MAX_POINTS 32
 
 #define GL_SILENCE_DEPRECATION
 #if defined(IMGUI_IMPL_OPENGL_ES2)
@@ -150,17 +151,15 @@ int WinMain(void*, void*, int, char**) {
 		if (show_demo_window)
 			ImGui::ShowDemoWindow(&show_demo_window);
 
-		// 2. Show a simple window that we create ourselves. We use a Begin/End pair to create a named window.
 		{
 			static int size = 2;
-			static double f1 = 1.e0;
-			static double inputs[32] = {};
-			static double outputs[32] = {};
+			static double inputs[MAX_POINTS] = {};
+			static double outputs[MAX_POINTS] = {};
 
-			ImGui::Begin("Hello, world!", 0, flags);
+			ImGui::Begin("Main area", 0, flags);
 
 			if (ImGui::Button("+")) {
-				size++;
+				size = (size < MAX_POINTS) ? size + 1: size;
 				chebCosSum (size, inputs, outputs);
 			}
 			ImGui::SameLine();
@@ -173,9 +172,14 @@ int WinMain(void*, void*, int, char**) {
 
 
 			ImGuiTabBarFlags tab_bar_flags = ImGuiTabBarFlags_None;
-			if (ImGui::BeginTabBar("MyTabBar", tab_bar_flags)) {
+			if (ImGui::BeginTabBar("Input format", tab_bar_flags)) {
 				if (ImGui::BeginTabItem("Default")) {
 					ImGui::Text("This is the Avocado tab!\nblah blah blah blah blah");
+					for (int i = 0; i < size; i++) {
+						if(ImGui::InputDouble(std::to_string(i).c_str(), &inputs[i], 0.0, 0.0, "%lf")) {
+							chebCosSum (size, inputs, outputs);
+						}
+					}
 					ImGui::EndTabItem();
 				}
 				if (ImGui::BeginTabItem("Scientific")) {
@@ -199,18 +203,8 @@ int WinMain(void*, void*, int, char**) {
 			}
 			ImGui::Text("This is some useful text.");				// Display some text (you can use a format strings too)
 			ImGui::Checkbox("Demo Window", &show_demo_window);		// Edit bools storing our window open/close state
-			ImGui::Checkbox("Another Window", &show_another_window);
 
 			ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / io.Framerate, io.Framerate);
-			ImGui::End();
-		}
-
-		// 3. Show another simple window.
-		if (show_another_window) {
-			ImGui::Begin("Another Window", &show_another_window);	// Pass a pointer to our bool variable (the window will have a closing button that will clear the bool when clicked)
-			ImGui::Text("Hello from another window!");
-			if (ImGui::Button("Close Me"))
-				show_another_window = false;
 			ImGui::End();
 		}
 
