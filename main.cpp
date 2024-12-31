@@ -176,7 +176,7 @@ int WinMain(void*, void*, int, char**) {
 				if (ImGui::BeginTabItem("Default")) {
 					ImGui::Text("This is the Avocado tab!\nblah blah blah blah blah");
 					for (int i = 0; i < size; i++) {
-						if(ImGui::InputDouble(std::to_string(i).c_str(), &inputs[i], 0.0, 0.0, "%lf")) {
+						if(ImGui::InputDouble(std::to_string(i).c_str(), &inputs[i], 0.0, 0.0, "%.19lf")) {
 							chebCosSum (size, inputs, outputs);
 						}
 					}
@@ -199,7 +199,7 @@ int WinMain(void*, void*, int, char**) {
 			}
 			ImGui::Separator();
 			for (int i = 0; i < size; i++) {
-				ImGui::InputDouble(std::to_string(i).c_str(), &outputs[i], 0.0, 0.0, "%f");
+				ImGui::InputDouble(std::to_string(i).c_str(), &outputs[i], 0.0, 0.0, "%.19lf");
 			}
 			ImGui::Text("This is some useful text.");				// Display some text (you can use a format strings too)
 			ImGui::Checkbox("Demo Window", &show_demo_window);		// Edit bools storing our window open/close state

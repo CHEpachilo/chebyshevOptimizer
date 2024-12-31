@@ -1,4 +1,5 @@
 Debug/*
+benchmark/Debug/*
 
 imgui.ini
 *.pdb
