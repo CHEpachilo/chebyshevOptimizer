@@ -3,6 +3,7 @@
 #include "imgui_impl_opengl3.h"
 #include <stdio.h>
 #include <string>
+#include <format>
 
 #include "chebCosSum.cpp"
 #define MAX_POINTS 32
@@ -65,7 +66,7 @@ int WinMain(void*, void*, int, char**) {
 #endif
 
 	// Create window with graphics context
-	GLFWwindow* window = glfwCreateWindow(1280, 720, "Dear ImGui GLFW+OpenGL3 example", nullptr, nullptr);
+	GLFWwindow* window = glfwCreateWindow(800, 600, "Cosine sum resolver", nullptr, nullptr);
 	if (window == nullptr)
 		return 1;
 	glfwMakeContextCurrent(window);
@@ -89,26 +90,7 @@ int WinMain(void*, void*, int, char**) {
 #endif
 	ImGui_ImplOpenGL3_Init(glsl_version);
 
-	// Load Fonts
-	// - If no fonts are loaded, dear imgui will use the default font. You can also load multiple fonts and use ImGui::PushFont()/PopFont() to select them.
-	// - AddFontFromFileTTF() will return the ImFont* so you can store it if you need to select the font among multiple.
-	// - If the file cannot be loaded, the function will return a nullptr. Please handle those errors in your application (e.g. use an assertion, or display an error and quit).
-	// - The fonts will be rasterized at a given size (w/ oversampling) and stored into a texture when calling ImFontAtlas::Build()/GetTexDataAsXXXX(), which ImGui_ImplXXXX_NewFrame below will call.
-	// - Use '#define IMGUI_ENABLE_FREETYPE' in your imconfig file to use Freetype for higher quality font rendering.
-	// - Read 'docs/FONTS.md' for more instructions and details.
-	// - Remember that in C/C++ if you want to include a backslash \ in a string literal you need to write a double backslash \\ !
-	// - Our Emscripten build process allows embedding fonts to be accessible at runtime from the "fonts/" folder. See Makefile.emscripten for details.
-	//io.Fonts->AddFontDefault();
-	//io.Fonts->AddFontFromFileTTF("c:\\Windows\\Fonts\\segoeui.ttf", 18.0f);
-	//io.Fonts->AddFontFromFileTTF("../../misc/fonts/DroidSans.ttf", 16.0f);
-	//io.Fonts->AddFontFromFileTTF("../../misc/fonts/Roboto-Medium.ttf", 16.0f);
-	//io.Fonts->AddFontFromFileTTF("../../misc/fonts/Cousine-Regular.ttf", 15.0f);
-	//ImFont* font = io.Fonts->AddFontFromFileTTF("c:\\Windows\\Fonts\\ArialUni.ttf", 18.0f, nullptr, io.Fonts->GetGlyphRangesJapanese());
-	//IM_ASSERT(font != nullptr);
-
-	// Our state
 	bool show_demo_window = false;
-	bool show_another_window = false;
 	ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
 
 	// Main loop
@@ -137,7 +119,6 @@ int WinMain(void*, void*, int, char**) {
 		ImGui_ImplGlfw_NewFrame();
 		ImGui::NewFrame();
 
-
 		int width, height;
 		glfwGetWindowSize(window, &width, &height);
 		ImGui::SetNextWindowSize(ImVec2(width, height)); // ensures ImGui fits the GLFW window
@@ -147,7 +128,7 @@ int WinMain(void*, void*, int, char**) {
 										ImGuiWindowFlags_NoResize		|
 										ImGuiWindowFlags_NoCollapse		|
 										ImGuiWindowFlags_NoDecoration;
-		// 1. Show the big demo window (Most of the sample code is in ImGui::ShowDemoWindow()! You can browse its code to learn more about Dear ImGui!).
+
 		if (show_demo_window)
 			ImGui::ShowDemoWindow(&show_demo_window);
 
@@ -157,7 +138,7 @@ int WinMain(void*, void*, int, char**) {
 			static double outputs[MAX_POINTS] = {};
 
 			ImGui::Begin("Main area", 0, flags);
-
+			
 			if (ImGui::Button("+")) {
 				size = (size < MAX_POINTS) ? size + 1: size;
 				chebCosSum (size, inputs, outputs);
@@ -168,44 +149,131 @@ int WinMain(void*, void*, int, char**) {
 				chebCosSum (size, inputs, outputs);
 			}
 			ImGui::SameLine();
-			ImGui::Text("size = %d", size);
+			if (size < 10)
+				ImGui::Text("size = %d   ", size);
+			else
+				ImGui::Text("size = %d  ", size);
 
+			ImGui::SameLine();
+			ImGui::Text("Demos:");
+
+			ImGui::SameLine();
+			if (ImGui::Button("\"Good enough\" Blackman window")) {
+				size = 3;
+				inputs [0] = 0.42;
+				inputs [1] = -0.5;
+				inputs [2] = 0.08;
+				chebCosSum (size, inputs, outputs);
+			}
+			ImGui::SameLine();
+			if (ImGui::Button("Blackman-Nutall window")) {
+				size = 4;
+				inputs [0] = 3.635819267707608e-001;
+				inputs [1] = -4.891774371450171e-001;
+				inputs [2] = 1.365995139786921e-001;
+				inputs [3] = -1.064112210553003e-002;
+				chebCosSum (size, inputs, outputs);
+			}
+			ImGui::SameLine();
+			if (ImGui::Button("Blackman-Harris window")) {
+				size = 4;
+				inputs [0] = 3.58750287312166e-001;
+				inputs [1] = -4.88290107472600e-001;
+				inputs [2] = 1.41279712970519e-001;
+				inputs [3] = -1.16798922447150e-002;
+				chebCosSum (size, inputs, outputs);
+			}
+
+			ImGui::SameLine();
+			if (ImGui::Button("Clear")) {
+				for (int i = 0; i < MAX_POINTS; i++) {
+					inputs[i] = 0;
+					outputs[i] = 0;
+				}
+			}
 
 			ImGuiTabBarFlags tab_bar_flags = ImGuiTabBarFlags_None;
 			if (ImGui::BeginTabBar("Input format", tab_bar_flags)) {
 				if (ImGui::BeginTabItem("Default")) {
-					ImGui::Text("This is the Avocado tab!\nblah blah blah blah blah");
+					ImGui::Text("Default input method\n(ex. 123.45467)");
 					for (int i = 0; i < size; i++) {
-						if(ImGui::InputDouble(std::to_string(i).c_str(), &inputs[i], 0.0, 0.0, "%.19lf")) {
+						std::string ss;
+						if (i > 1) {
+							ss = std::format("cos({0:}x)", i);
+						}
+						else if (i == 1) {
+							ss = "cos(x)";
+						}
+						else {
+							ss = "scalar";
+						}
+						if(ImGui::InputDouble(ss.c_str(), &inputs[i], 0.0, 0.0, "%.20lf")) {
 							chebCosSum (size, inputs, outputs);
 						}
 					}
 					ImGui::EndTabItem();
 				}
 				if (ImGui::BeginTabItem("Scientific")) {
-					ImGui::Text("This is the Broccoli tab!\nblah blah blah blah blah");
+					ImGui::Text("Exponential input\n(ex. 1.234e-567)");
 					for (int i = 0; i < size; i++) {
-						if(ImGui::InputDouble(std::to_string(i).c_str(), &inputs[i], 0.0, 0.0, "%e")) {
+						std::string ss;
+						if (i > 1) {
+							ss = std::format("cos({0:}x)", i);
+						}
+						else if (i == 1) {
+							ss = "cos(x)";
+						}
+						else {
+							ss = "scalar";
+						}
+						if(ImGui::InputDouble(ss.c_str(), &inputs[i], 0.0, 0.0, "%e")) {
 							chebCosSum (size, inputs, outputs);
 						}
 					}
 					ImGui::EndTabItem();
 				}
-				if (ImGui::BeginTabItem("Hex")) {
-					ImGui::Text("This is the Cucumber tab!\nblah blah blah blah blah");
-					ImGui::EndTabItem();
-				}
 				ImGui::EndTabBar();
 			}
-			ImGui::Separator();
-			for (int i = 0; i < size; i++) {
-				ImGui::InputDouble(std::to_string(i).c_str(), &outputs[i], 0.0, 0.0, "%.19lf");
-			}
-			ImGui::Text("This is some useful text.");				// Display some text (you can use a format strings too)
-			ImGui::Checkbox("Demo Window", &show_demo_window);		// Edit bools storing our window open/close state
 
-			ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / io.Framerate, io.Framerate);
+			ImGui::Separator();
+
+			ImGui::Text("Calculated coefficients:");
+			for (int i = 0; i < size; i++) {
+				std::string ss;
+				if (i > 1) {
+					ss = std::format("cos(x)^{0:}", i);
+				}
+				else if (i == 1) {
+					ss = "cos(x)";
+				}
+				else {
+					ss = "scalar";
+				}
+				ImGui::InputDouble(ss.c_str(), &outputs[i], 0.0, 0.0, "%.20lf", ImGuiInputTextFlags_ReadOnly);
+			}
+
+			ImGui::Separator();
+
+			ImGui::Text("Typical usage:");
+			//Generating code example
+			std::string ss;
+			ss = "double window_function (const double x) {\n\tconst double c = std::cos(2.0 * pi * x);\n\treturn ";
+			for (int i = 1; i < size; i++)
+				ss += "(";
+			ss += std::format(" {:.20f}", outputs[size - 1]);
+			for (int i = size - 2; i >= 0; i--) {
+				if (outputs[i] >= 0)
+					ss += std::format("\n\t\t\t\t* c + {:.20f} )", outputs[i]);
+				else
+					ss += std::format("\n\t\t\t\t* c - {:.20f} )", -outputs[i]);
+			}
+			ss += ";\n}";
+
+			char* txt = strdup(ss.c_str());
+			ImGui::InputTextMultiline("##source", txt, strlen(txt), ImVec2(-FLT_MIN, ImGui::GetTextLineHeight() * 16), ImGuiInputTextFlags_ReadOnly);
+			//ImGui::Checkbox("Demo Window", &show_demo_window);			// Edit bools storing our window open/close state
 			ImGui::End();
+			delete [] txt;
 		}
 
 		// Rendering
