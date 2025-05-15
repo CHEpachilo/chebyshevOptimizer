@@ -6,4 +6,4 @@
 @set LIBS=/LIBPATH:libs\imgui\examples\libs\glfw\lib-vc2010-64 glfw3.lib opengl32.lib gdi32.lib shell32.lib
 @ECHO off
 mkdir %OUT_DIR% >NUL 2>&1
-cl /std:c++latest /nologo /Zi /MD /utf-8 %INCLUDES% %SOURCES% /Fe%OUT_DIR%/%OUT_EXE%.exe /Fo%OUT_DIR%/ /link %LIBS% /SUBSYSTEM:WINDOWS
+cl /std:c++latest /nologo /O2 /arch:AVX2 /Zi /MD /utf-8 %INCLUDES% %SOURCES% /Fe%OUT_DIR%/%OUT_EXE%.exe /Fo%OUT_DIR%/ /link %LIBS% /SUBSYSTEM:WINDOWS
