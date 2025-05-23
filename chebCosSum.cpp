@@ -37,14 +37,14 @@ void chebCosSum(size_t size, const double* inputCoeffs, double* outputCoeffs) {
 		if (size >= 4) {
 			for (; j <= size - 4; j += 4) {
 				__m256d prevC_vec = _mm256_load_pd(&prevC[j - 1]);
-				__m256d prevprevC_vec = _mm256_load_pd(&prevprevC[j]);
+				__m256d prevprevC_vec = _mm256_loadu_pd(&prevprevC[j]);
 				__m256d two_vec = _mm256_set1_pd(2.0);
 				// Perform the Chebyshev calculation: C[j] = 2 * prevC[j-1] - prevprevC[j]
 				__m256d result = _mm256_fmadd_pd(
 						two_vec,
 						prevC_vec,
 						_mm256_sub_pd(_mm256_setzero_pd(), prevprevC_vec));
-				_mm256_store_pd(&C[j], result);
+				_mm256_storeu_pd(&C[j], result);
 			}
 		}
 #endif
